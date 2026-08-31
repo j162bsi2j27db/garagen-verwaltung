@@ -246,7 +246,6 @@
       color: #4ade80;
     }
 
-    /* Checkboxes Matrix */
     .payment-section {
       background: rgba(15, 23, 42, 0.4);
       border-radius: 8px;
@@ -319,16 +318,12 @@
 
   <div class="container">
     
-    <!-- Header -->
     <header class="glass-card">
       <h1>Garagen-Verwaltung & Community</h1>
-      <p>Transparente Mietkosten, Anschaffungen, Miete-Abhaken & Ersparnis</p>
+      <p>Live-Synchronisiert: Mietkosten, Anschaffungen, Bezahllisten & Ersparnis</p>
     </header>
 
-    <!-- Top Grid: Ersparnis, Miete Abhaken, Ausstattung & Team -->
     <section class="grid-4">
-      
-      <!-- 1. Gespartes Geld -->
       <div class="glass-card info-card savings-card">
         <h2><i class="fa-solid fa-piggy-bank"></i> Eingenommen / Gespart</h2>
         <p style="color: var(--text-muted); font-size: 0.8rem;">Eingenommenes Geld durch bezahlte Anschaffungs-Anteile</p>
@@ -337,7 +332,6 @@
         <p style="font-size: 0.78rem; color: var(--text-muted);" id="savings-per-person">Stand aller Anschaffungen</p>
       </div>
 
-      <!-- 2. Mietkosten & Miete-Abhaken -->
       <div class="glass-card info-card">
         <h2><i class="fa-solid fa-wallet"></i> Miete diesen Monat</h2>
         <p style="color: var(--text-muted); font-size: 0.8rem;">12,50 € pro Person (100 € gesamt)</p>
@@ -350,7 +344,6 @@
         </div>
       </div>
 
-      <!-- 3. Ausstattung -->
       <div class="glass-card info-card">
         <h2><i class="fa-solid fa-screwdriver-wrench"></i> Ausstattung</h2>
         <ul class="info-list" style="margin-top: 0.4rem;">
@@ -361,7 +354,6 @@
         </ul>
       </div>
 
-      <!-- 4. Belegung -->
       <div class="glass-card info-card">
         <h2><i class="fa-solid fa-users"></i> Belegung (8/8)</h2>
         <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">Alle 8 Plätze besetzt</p>
@@ -378,7 +370,6 @@
       </div>
     </section>
 
-    <!-- Anschaffung hinzufügen & Liste -->
     <section class="grid-2">
       <div class="glass-card">
         <h2 style="margin-bottom: 1.25rem; color: var(--accent-color); font-size: 1.25rem;">
@@ -424,7 +415,6 @@
       </div>
     </section>
 
-    <!-- Pinnwand & Formspree -->
     <section class="grid-2">
       <div class="glass-card">
         <h2 style="margin-bottom: 1rem; color: var(--accent-color); font-size: 1.25rem;">
@@ -470,15 +460,52 @@
 
   </div>
 
-  <script>
+  <!-- FIREBASE SKRIPTE INKLUSIVE ECHTZEIT-DATENBANK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // DEINE NEUE GEPRÜFTE FIREBASE-KONFIGURATION
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxMzhxNZbdIg2ii3759HXxPPHoKFw2Goo",
+      authDomain: "garage-de580.firebaseapp.com",
+      databaseURL: "https://garage-de580-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "garage-de580",
+      storageBucket: "garage-de580.firebasestorage.app",
+      messagingSenderId: "128470259374",
+      appId: "1:128470259374:web:f89b46518ca9df4beabf3f",
+      measurementId: "G-29CKLC3J07"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
     const ALL_MEMBERS = ['Jonas', 'Noah', 'Samuel', 'Leo', 'Alex', 'Tanay', 'Nico', 'Jon'];
 
-    // --- MIETKOSTEN-BEZAHLUNG (LOCAL STORAGE) ---
-    let rentPaidList = JSON.parse(localStorage.getItem('garage_rent_paid')) || [];
+    // Realtime Database Referenzen
+    const rentRef = ref(db, 'rentPaid');
+    const itemsRef = ref(db, 'shoppingItems');
+    const feedbackRef = ref(db, 'feedbacks');
 
-    function saveRentPaid() {
-      localStorage.setItem('garage_rent_paid', JSON.stringify(rentPaidList));
-    }
+    let rentPaidList = [];
+    let items = [];
+    let feedbacks = [];
+
+    // --- MIETKOSTEN ECHTZEIT ---
+    onValue(rentRef, (snapshot) => {
+      rentPaidList = snapshot.val() || [];
+      renderRentBoard();
+    });
+
+    window.toggleRentPaid = function(member) {
+      const index = rentPaidList.indexOf(member);
+      if (index > -1) {
+        rentPaidList.splice(index, 1);
+      } else {
+        rentPaidList.push(member);
+      }
+      set(rentRef, rentPaidList);
+    };
 
     function renderRentBoard() {
       const container = document.getElementById('rent-members-grid');
@@ -499,29 +526,13 @@
       document.getElementById('rent-status-count').style.color = rentPaidList.length === 8 ? '#4ade80' : 'var(--accent-color)';
     }
 
-    function toggleRentPaid(member) {
-      const index = rentPaidList.indexOf(member);
-      if (index > -1) {
-        rentPaidList.splice(index, 1);
-      } else {
-        rentPaidList.push(member);
-      }
-      saveRentPaid();
-      renderRentBoard();
-    }
+    // --- ANSCHAFFUNGEN ECHTZEIT ---
+    onValue(itemsRef, (snapshot) => {
+      const data = snapshot.val();
+      items = data ? Object.values(data) : [];
+      renderList();
+    });
 
-    // --- ANSCHAFFUNGEN & BEZAHLUNG ---
-    let items = JSON.parse(localStorage.getItem('garage_shopping_items')) || [
-      { id: 1, name: 'Kühlschrank', price: 150.00, buyer: 'Jonas', people: 8, paidBy: ['Jonas', 'Noah', 'Samuel'] },
-      { id: 2, name: 'Werkzeug-Set', price: 60.00, buyer: 'Noah', people: 4, paidBy: ['Noah', 'Leo'] }
-    ];
-
-    function saveItems() {
-      localStorage.setItem('garage_shopping_items', JSON.stringify(items));
-      calculateEarningSavings();
-    }
-
-    // Berechnet das eingenommene/gesammelte Geld von allen abgehakten Anschaffungs-Anteilen
     function calculateEarningSavings() {
       let totalCollected = 0;
       items.forEach(item => {
@@ -533,7 +544,6 @@
       document.getElementById('total-savings-display').innerText = totalCollected.toFixed(2).replace('.', ',') + ' €';
     }
 
-    // --- ICON MAPPING DATENBANK (>150+ KEYWORDS) ---
     const iconMappings = [
       { icon: 'fa-snowflake', keywords: ['kühlschrank', 'kühlbox', 'gefrierschrank', 'eis', 'eisschrank', 'eiswürfel', 'kalt', 'kühler', 'kühlung', 'cola', 'bier', 'getränk', 'wasser', 'saft', 'dose', 'energy', 'redbull', 'monster', 'tiefkühl'] },
       { icon: 'fa-mug-hot', keywords: ['kaffee', 'kaffeemaschine', 'espressomaschine', 'espresso', 'wasserkocher', 'tee', 'tasse', 'becher', 'thermoskanne'] },
@@ -568,14 +578,12 @@
       return 'fa-box';
     }
 
-    // --- RENDER ANSCHAFFUNGEN ---
     function renderList() {
       const listContainer = document.getElementById('shopping-list');
       listContainer.innerHTML = '';
 
       if (items.length === 0) {
         listContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Keine Anschaffungen eingetragen.</p>';
-        updateHiddenInput();
         calculateEarningSavings();
         return;
       }
@@ -638,11 +646,10 @@
         listContainer.appendChild(card);
       });
 
-      updateHiddenInput();
       calculateEarningSavings();
     }
 
-    function toggleItemPayment(itemId, memberName) {
+    window.toggleItemPayment = function(itemId, memberName) {
       const item = items.find(i => i.id === itemId);
       if (!item) return;
 
@@ -655,9 +662,8 @@
         item.paidBy.push(memberName);
       }
 
-      saveItems();
-      renderList();
-    }
+      set(ref(db, 'shoppingItems/' + itemId), item);
+    };
 
     document.getElementById('calc-form').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -667,55 +673,53 @@
       const buyerInput = document.getElementById('item-buyer');
       const peopleInput = document.getElementById('item-people');
 
+      const newItemId = Date.now();
       const newItem = {
-        id: Date.now(),
+        id: newItemId,
         name: nameInput.value.trim(),
         price: parseFloat(priceInput.value),
         buyer: buyerInput.value,
         people: parseInt(peopleInput.value, 10),
-        paidBy: [buyerInput.value] // Der Käufer hat seinen eigenen Teil bereits automatisch bezahlt
+        paidBy: [buyerInput.value]
       };
 
-      items.push(newItem);
-      saveItems();
-      renderList();
+      set(ref(db, 'shoppingItems/' + newItemId), newItem);
 
       nameInput.value = '';
       priceInput.value = '';
       peopleInput.value = '8';
     });
 
-    function deleteItem(id) {
-      items = items.filter(item => item.id !== id);
-      saveItems();
-      renderList();
-    }
+    window.deleteItem = function(id) {
+      remove(ref(db, 'shoppingItems/' + id));
+    };
 
-    function updateHiddenInput() {
-      const hiddenInput = document.getElementById('hidden-shopping-list');
-      if (items.length === 0) {
-        hiddenInput.value = 'Keine aktuellen Anschaffungs-Einträge.';
-        return;
-      }
+    // --- PINNWAND ECHTZEIT ---
+    onValue(feedbackRef, (snapshot) => {
+      const data = snapshot.val();
+      feedbacks = data ? Object.values(data) : [];
+      feedbacks.sort((a, b) => b.id - a.id);
+      renderFeedbacks();
+    });
 
-      const summary = items.map(i => {
-        const perPerson = (i.price / i.people).toFixed(2);
-        const paidStr = (i.paidBy || []).join(', ');
-        return `${i.name} (Gekauft von ${i.buyer}): ${i.price.toFixed(2)}€ (${perPerson}€/Pers. - Bezahlt von: [${paidStr}])`;
-      }).join(' | ');
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      const nameSelect = document.getElementById('member-name');
+      const messageInput = document.getElementById('message');
 
-      hiddenInput.value = summary;
-    }
+      const fbId = Date.now();
+      const newFeedback = {
+        id: fbId,
+        name: nameSelect.value,
+        message: messageInput.value.trim(),
+        date: new Date().toLocaleDateString('de-DE')
+      };
 
-    // --- PINNWAND (PERMANENT) ---
-    let feedbacks = JSON.parse(localStorage.getItem('garage_feedbacks')) || [
-      { id: 1, name: 'Jonas', message: 'Kühlschrank steht in der Garage! Wer bringt Getränke mit?', date: '30.08.2026' },
-      { id: 2, name: 'Noah', message: 'Lasst uns als Nächstes das Werkzeug-Set bestellen.', date: '31.08.2026' }
-    ];
+      set(ref(db, 'feedbacks/' + fbId), newFeedback);
+    });
 
-    function saveFeedbacks() {
-      localStorage.setItem('garage_feedbacks', JSON.stringify(feedbacks));
-    }
+    window.deleteFeedback = function(id) {
+      remove(ref(db, 'feedbacks/' + id));
+    };
 
     function renderFeedbacks() {
       const board = document.getElementById('feedback-board');
@@ -749,38 +753,11 @@
       });
     }
 
-    document.getElementById('contact-form').addEventListener('submit', function(e) {
-      const nameSelect = document.getElementById('member-name');
-      const messageInput = document.getElementById('message');
-
-      const newFeedback = {
-        id: Date.now(),
-        name: nameSelect.value,
-        message: messageInput.value.trim(),
-        date: new Date().toLocaleDateString('de-DE')
-      };
-
-      feedbacks.unshift(newFeedback);
-      saveFeedbacks();
-      renderFeedbacks();
-    });
-
-    function deleteFeedback(id) {
-      feedbacks = feedbacks.filter(fb => fb.id !== id);
-      saveFeedbacks();
-      renderFeedbacks();
-    }
-
     function escapeHtml(text) {
       return text.replace(/[&<>"']/g, function(m) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
       });
     }
-
-    // Initiales Laden
-    renderRentBoard();
-    renderList();
-    renderFeedbacks();
   </script>
 </body>
 </html>
