@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Garagen-Verwaltung & Community</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #1e1b4b 50%, #0b0f19 100%);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.125);
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+      --primary-color: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent-color: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1150px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: var(--glass-shadow);
+      padding: 1.75rem;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+    }
+
+    header h1 {
+      font-size: 2.3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .info-card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--accent-color);
+    }
+
+    .info-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .info-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+
+    .info-list li i {
+      color: var(--primary-color);
+      width: 18px;
+      text-align: center;
+    }
+
+    .cost-highlight {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #4ade80;
+      margin-top: 0.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-color);
+    }
+
+    button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.85rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+
+    .item-list, .feedback-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .item-card, .feedback-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      padding: 1rem;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .item-icon {
+      width: 42px;
+      height: 42px;
+      background: rgba(99, 102, 241, 0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-color);
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+
+    .item-details h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .item-details p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .item-price {
+      text-align: right;
+    }
+
+    .item-price .total {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .item-price .per-person {
+      font-size: 0.8rem;
+      color: #4ade80;
+    }
+
+    /* Checkboxes Matrix */
+    .payment-section {
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .payment-title {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .payment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+      gap: 0.4rem;
+    }
+
+    .payer-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .payer-checkbox:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .payer-checkbox input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .payer-checkbox.paid {
+      color: #4ade80;
+    }
+
+    .delete-btn {
+      background: transparent;
+      color: #ef4444;
+      width: auto;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+    }
+
+    .delete-btn:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .savings-card {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(99, 102, 241, 0.15) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Header -->
+    <header class="glass-card">
+      <h1>Garagen-Verwaltung & Community</h1>
+      <p>Transparente Mietkosten, Anschaffungen, Miete-Abhaken & Ersparnis</p>
+    </header>
+
+    <!-- Top Grid: Ersparnis, Miete Abhaken, Ausstattung & Team -->
+    <section class="grid-4">
+      
+      <!-- 1. Gespartes Geld -->
+      <div class="glass-card info-card savings-card">
+        <h2><i class="fa-solid fa-piggy-bank"></i> Eingenommen / Gespart</h2>
+        <p style="color: var(--text-muted); font-size: 0.8rem;">Eingenommenes Geld durch bezahlte Anschaffungs-Anteile</p>
+        <div class="cost-highlight" id="total-savings-display">0,00 €</div>
+        <hr style="border-color: var(--glass-border); margin: 0.6rem 0;" />
+        <p style="font-size: 0.78rem; color: var(--text-muted);" id="savings-per-person">Stand aller Anschaffungen</p>
+      </div>
+
+      <!-- 2. Mietkosten & Miete-Abhaken -->
+      <div class="glass-card info-card">
+        <h2><i class="fa-solid fa-wallet"></i> Miete diesen Monat</h2>
+        <p style="color: var(--text-muted); font-size: 0.8rem;">12,50 € pro Person (100 € gesamt)</p>
+        <div class="payment-section" style="margin-top: 0.6rem;">
+          <div class="payment-title">
+            <span>Miete bezahlt:</span>
+            <span id="rent-status-count" style="color: var(--accent-color);">0 / 8</span>
+          </div>
+          <div class="payment-grid" id="rent-members-grid"></div>
+        </div>
+      </div>
+
+      <!-- 3. Ausstattung -->
+      <div class="glass-card info-card">
+        <h2><i class="fa-solid fa-screwdriver-wrench"></i> Ausstattung</h2>
+        <ul class="info-list" style="margin-top: 0.4rem;">
+          <li><i class="fa-solid fa-plug"></i> 230V & Starkstrom</li>
+          <li><i class="fa-solid fa-lightbulb"></i> LED & Werkbank</li>
+          <li><i class="fa-solid fa-broom"></i> Sauber hinterlassen</li>
+          <li><i class="fa-solid fa-key"></i> Garagenschlüssel</li>
+        </ul>
+      </div>
+
+      <!-- 4. Belegung -->
+      <div class="glass-card info-card">
+        <h2><i class="fa-solid fa-users"></i> Belegung (8/8)</h2>
+        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">Alle 8 Plätze besetzt</p>
+        <div class="payment-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="payer-checkbox" style="cursor:default;"><i class="fa-solid fa-user-gear" style="color:var(--accent-color);"></i> Jonas</div>
+          <div class="payer-checkbox" style="cursor:default;"><i class="fa-solid fa-user-gear" style="color:var(--accent-color);"></i> Noah</div>
+          <div class="payer-checkbox" style="cursor:default;"><i class="fa-solid fa-user-gear" style="color:var(--accent-color);"></i> Samuel</div>
+          <div class="payer-checkbox" style="cursor:default;"><i class="fa-solid fa-user-gear" style="color:var(--accent-color);"></i> Leo</div>
+          <div class="payer-checkbox" style="cursor:default;"><i class="fa-solid fa-user-gear" style="color:var(--accent-color);"></i> Alex</div>
+          <div class="payer-checkbox" style="cursor:default;"><i class="fa-solid fa-user-gear" style="color:var(--accent-color);"></i> Tanay</div>
+          <div class="payer-checkbox" style="cursor:default;"><i class="fa-solid fa-user-gear" style="color:var(--accent-color);"></i> Nico</div>
+          <div class="payer-checkbox" style="cursor:default;"><i class="fa-solid fa-user-gear" style="color:var(--accent-color);"></i> Jon</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Anschaffung hinzufügen & Liste -->
+    <section class="grid-2">
+      <div class="glass-card">
+        <h2 style="margin-bottom: 1.25rem; color: var(--accent-color); font-size: 1.25rem;">
+          <i class="fa-solid fa-cart-plus"></i> Anschaffung hinzufügen
+        </h2>
+        <form id="calc-form">
+          <div class="form-group">
+            <label for="item-name">Gegenstand</label>
+            <input type="text" id="item-name" placeholder="z. B. Kühlschrank, Drehmomentschlüssel, Sofa..." required />
+          </div>
+          <div class="grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label for="item-price">Gesamtpreis (€)</label>
+              <input type="number" id="item-price" step="0.01" placeholder="80.00" required />
+            </div>
+            <div class="form-group">
+              <label for="item-buyer">Gekauft / Bezahlt von</label>
+              <select id="item-buyer" required>
+                <option value="Jonas">Jonas</option>
+                <option value="Noah">Noah</option>
+                <option value="Samuel">Samuel</option>
+                <option value="Leo">Leo</option>
+                <option value="Alex">Alex</option>
+                <option value="Tanay">Tanay</option>
+                <option value="Nico">Nico</option>
+                <option value="Jon">Jon</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="item-people">Anzahl Personen zum Teilen</label>
+            <input type="number" id="item-people" value="8" min="1" max="8" required />
+          </div>
+          <button type="submit"><i class="fa-solid fa-plus"></i> Anschaffung eintragen</button>
+        </form>
+      </div>
+
+      <div class="glass-card">
+        <h2 style="margin-bottom: 1.25rem; color: var(--accent-color); font-size: 1.25rem;">
+          <i class="fa-solid fa-list-check"></i> Anschaffungen & Anteile Abhaken
+        </h2>
+        <div class="item-list" id="shopping-list"></div>
+      </div>
+    </section>
+
+    <!-- Pinnwand & Formspree -->
+    <section class="grid-2">
+      <div class="glass-card">
+        <h2 style="margin-bottom: 1rem; color: var(--accent-color); font-size: 1.25rem;">
+          <i class="fa-solid fa-paper-plane"></i> Nachricht verfassen
+        </h2>
+        <form id="contact-form" action="https://formspree.io/f/xyzaaa" method="POST">
+          <div class="form-group">
+            <label for="member-name">Dein Name</label>
+            <select id="member-name" name="name" required>
+              <option value="" disabled selected>Name auswählen...</option>
+              <option value="Jonas">Jonas</option>
+              <option value="Noah">Noah</option>
+              <option value="Samuel">Samuel</option>
+              <option value="Leo">Leo</option>
+              <option value="Alex">Alex</option>
+              <option value="Tanay">Tanay</option>
+              <option value="Nico">Nico</option>
+              <option value="Jon">Jon</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="member-email">Deine E-Mail</label>
+            <input type="email" name="email" id="member-email" placeholder="name@beispiel.de" required />
+          </div>
+          <div class="form-group">
+            <label for="message">Nachricht / Rückmeldung</label>
+            <textarea name="message" id="message" rows="3" placeholder="Hast du Fragen oder Vorschläge für die Garagengemeinschaft?" required></textarea>
+          </div>
+
+          <input type="hidden" name="einkaufsliste_uebersicht" id="hidden-shopping-list" />
+
+          <button type="submit"><i class="fa-solid fa-paper-plane"></i> Auf Pinnwand veröffentlichen & Senden</button>
+        </form>
+      </div>
+
+      <div class="glass-card">
+        <h2 style="margin-bottom: 1.25rem; color: var(--accent-color); font-size: 1.25rem;">
+          <i class="fa-solid fa-comments"></i> Pinnwand / Nachrichten
+        </h2>
+        <div class="feedback-list" id="feedback-board"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const ALL_MEMBERS = ['Jonas', 'Noah', 'Samuel', 'Leo', 'Alex', 'Tanay', 'Nico', 'Jon'];
+
+    // --- MIETKOSTEN-BEZAHLUNG (LOCAL STORAGE) ---
+    let rentPaidList = JSON.parse(localStorage.getItem('garage_rent_paid')) || [];
+
+    function saveRentPaid() {
+      localStorage.setItem('garage_rent_paid', JSON.stringify(rentPaidList));
+    }
+
+    function renderRentBoard() {
+      const container = document.getElementById('rent-members-grid');
+      container.innerHTML = '';
+
+      ALL_MEMBERS.forEach(member => {
+        const isPaid = rentPaidList.includes(member);
+        const label = document.createElement('label');
+        label.className = `payer-checkbox ${isPaid ? 'paid' : ''}`;
+        label.innerHTML = `
+          <input type="checkbox" ${isPaid ? 'checked' : ''} onchange="toggleRentPaid('${member}')" />
+          ${member}
+        `;
+        container.appendChild(label);
+      });
+
+      document.getElementById('rent-status-count').innerText = `${rentPaidList.length} / 8`;
+      document.getElementById('rent-status-count').style.color = rentPaidList.length === 8 ? '#4ade80' : 'var(--accent-color)';
+    }
+
+    function toggleRentPaid(member) {
+      const index = rentPaidList.indexOf(member);
+      if (index > -1) {
+        rentPaidList.splice(index, 1);
+      } else {
+        rentPaidList.push(member);
+      }
+      saveRentPaid();
+      renderRentBoard();
+    }
+
+    // --- ANSCHAFFUNGEN & BEZAHLUNG ---
+    let items = JSON.parse(localStorage.getItem('garage_shopping_items')) || [
+      { id: 1, name: 'Kühlschrank', price: 150.00, buyer: 'Jonas', people: 8, paidBy: ['Jonas', 'Noah', 'Samuel'] },
+      { id: 2, name: 'Werkzeug-Set', price: 60.00, buyer: 'Noah', people: 4, paidBy: ['Noah', 'Leo'] }
+    ];
+
+    function saveItems() {
+      localStorage.setItem('garage_shopping_items', JSON.stringify(items));
+      calculateEarningSavings();
+    }
+
+    // Berechnet das eingenommene/gesammelte Geld von allen abgehakten Anschaffungs-Anteilen
+    function calculateEarningSavings() {
+      let totalCollected = 0;
+      items.forEach(item => {
+        const perPerson = item.price / item.people;
+        const paidCount = (item.paidBy || []).length;
+        totalCollected += perPerson * paidCount;
+      });
+
+      document.getElementById('total-savings-display').innerText = totalCollected.toFixed(2).replace('.', ',') + ' €';
+    }
+
+    // --- ICON MAPPING DATENBANK (>150+ KEYWORDS) ---
+    const iconMappings = [
+      { icon: 'fa-snowflake', keywords: ['kühlschrank', 'kühlbox', 'gefrierschrank', 'eis', 'eisschrank', 'eiswürfel', 'kalt', 'kühler', 'kühlung', 'cola', 'bier', 'getränk', 'wasser', 'saft', 'dose', 'energy', 'redbull', 'monster', 'tiefkühl'] },
+      { icon: 'fa-mug-hot', keywords: ['kaffee', 'kaffeemaschine', 'espressomaschine', 'espresso', 'wasserkocher', 'tee', 'tasse', 'becher', 'thermoskanne'] },
+      { icon: 'fa-utensils', keywords: ['grill', 'bbq', 'gasgrill', 'mikrowelle', 'ofen', 'herd', 'kochplatte', 'friteuse', 'heißluftfriteuse', 'pizza', 'toaster', 'teller', 'besteck', 'pfanne', 'topf'] },
+      { icon: 'fa-wrench', keywords: ['werkzeug', 'werkzeugset', 'werkzeugkoffer', 'ratsche', 'knarre', 'steckschlüssel', 'schraubenschlüssel', 'drehmomentschlüssel', 'inbus', 'torx', 'schraubendreher', 'zange', 'seitenschneider', 'wasserpumpenzange', 'säge', 'schraubstock', 'brechstange'] },
+      { icon: 'fa-screwdriver', keywords: ['akkuschrauber', 'bohrmaschine', 'bohrhammer', 'bohrer', 'flext', 'winkelschleifer', 'stichsäge', 'kreissäge', 'multitool', 'heißklebepistole', 'tacker'] },
+      { icon: 'fa-hammer', keywords: ['hammer', 'gummihammer', 'vorschlaghammer', 'ausbeulhammer'] },
+      { icon: 'fa-fire-flame-curved', keywords: ['schweißgerät', 'schweißen', 'lötkolben', 'lötstation', 'gasbrenner', 'heißluftföhn'] },
+      { icon: 'fa-truck-pickup', keywords: ['hebebühne', 'wagenheber', 'unterstellbock', 'motorkran', 'seilzug', 'sackkarre', 'auffahrrampe'] },
+      { icon: 'fa-wind', keywords: ['kompressor', 'druckluft', 'schlagschrauber', 'ausblaspistole', 'reifenfüllmesser', 'sandstrahler'] },
+      { icon: 'fa-compact-disc', keywords: ['reifen', 'sommerreifen', 'winterreifen', 'rad', 'räder', 'felge', 'alufelge', 'mantel', 'schlauch'] },
+      { icon: 'fa-oil-can', keywords: ['öl', 'motoröl', 'bremsflüssigkeit', 'schmiermittel', 'fett', 'kanister', 'ölfilter', 'bremsenreiniger', 'wd40', 'wd-40', 'rostlöser'] },
+      { icon: 'fa-car-battery', keywords: ['batterie', 'autobatterie', 'akku', 'ladegerät', 'starthilfekabel', 'starthilfe', 'powerbank', 'multimeter'] },
+      { icon: 'fa-car', keywords: ['auto', 'pkw', 'kfz', 'stoßstange', 'auspuff', 'fahrwerk', 'feder', 'bremse', 'bremsscheibe', 'lenkrad'] },
+      { icon: 'fa-motorcycle', keywords: ['scooter', 'roller', 'e-scooter', 'moped', 'motorrad', 'quad', 'kart', 'fahrrad', 'ebike', 'helm'] },
+      { icon: 'fa-couch', keywords: ['couch', 'sofa', 'sessel', 'stuhl', 'stühle', 'klappstuhl', 'bank', 'hocker', 'lounge'] },
+      { icon: 'fa-table', keywords: ['tisch', 'werkbank', 'arbeitstisch', 'klapptisch', 'stehtisch', 'theke', 'bar'] },
+      { icon: 'fa-boxes-stacked', keywords: ['regal', 'schwerlastregal', 'schrank', 'werkzeugschrank', 'kiste', 'eurobox', 'sortimentskasten', 'haken'] },
+      { icon: 'fa-lightbulb', keywords: ['licht', 'lampe', 'led', 'led-streifen', 'strahler', 'baustrahler', 'taschenlampe', 'kabel', 'kabeltrommel', 'steckdose', 'adapter'] },
+      { icon: 'fa-broom', keywords: ['sauger', 'staubsauger', 'industriesauger', 'kärcher', 'hochdruckreiniger', 'besen', 'eimer', 'lappen', 'mikrofasertuch', 'politur', 'mülleimer'] },
+      { icon: 'fa-volume-high', keywords: ['musik', 'musikbox', 'lautsprecher', 'boxen', 'subwoofer', 'anlage', 'radio', 'bluetooth', 'jbl', 'partybox', 'tv', 'fernseher', 'beamer', 'kicker', 'dart'] },
+      { icon: 'fa-shield-halved', keywords: ['feuerlöscher', 'erstehilfe', 'verbandkasten', 'schloss', 'vorhängeschloss', 'kamera', 'alarm', 'arbeitshandschuhe', 'handschuhe'] }
+    ];
+
+    function getIconClass(name) {
+      const lower = name.toLowerCase().trim();
+      for (let mapping of iconMappings) {
+        if (mapping.keywords.some(keyword => lower.includes(keyword))) {
+          return mapping.icon;
+        }
+      }
+      return 'fa-box';
+    }
+
+    // --- RENDER ANSCHAFFUNGEN ---
+    function renderList() {
+      const listContainer = document.getElementById('shopping-list');
+      listContainer.innerHTML = '';
+
+      if (items.length === 0) {
+        listContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Keine Anschaffungen eingetragen.</p>';
+        updateHiddenInput();
+        calculateEarningSavings();
+        return;
+      }
+
+      items.forEach(item => {
+        if (!item.paidBy) item.paidBy = [];
+
+        const perPerson = (item.price / item.people).toFixed(2);
+        const iconClass = getIconClass(item.name);
+        const paidCount = item.paidBy.length;
+        const targetPeople = Math.min(item.people, ALL_MEMBERS.length);
+
+        const activeMembers = ALL_MEMBERS.slice(0, targetPeople);
+        const paymentCheckboxes = activeMembers.map(member => {
+          const isPaid = item.paidBy.includes(member);
+          return `
+            <label class="payer-checkbox ${isPaid ? 'paid' : ''}">
+              <input type="checkbox" ${isPaid ? 'checked' : ''} onchange="toggleItemPayment(${item.id}, '${member}')" />
+              ${member}
+            </label>
+          `;
+        }).join('');
+
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.innerHTML = `
+          <div class="item-header">
+            <div class="item-left">
+              <div class="item-icon">
+                <i class="fa-solid ${iconClass}"></i>
+              </div>
+              <div class="item-details">
+                <h4>${escapeHtml(item.name)}</h4>
+                <p>Gekauft von: <strong>${escapeHtml(item.buyer || 'Unbekannt')}</strong> (${item.people} Pers.)</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="item-price">
+                <div class="total">${item.price.toFixed(2)} €</div>
+                <div class="per-person">${perPerson} € / Person</div>
+              </div>
+              <button class="delete-btn" onclick="deleteItem(${item.id})" title="Löschen">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="payment-section">
+            <div class="payment-title">
+              <span>Wer hat seinen Anteil bezahlt / zurückgezahlt?</span>
+              <span style="color: ${paidCount === targetPeople ? '#4ade80' : 'var(--accent-color)'};">
+                ${paidCount} / ${targetPeople} bezahlt
+              </span>
+            </div>
+            <div class="payment-grid">
+              ${paymentCheckboxes}
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+
+      updateHiddenInput();
+      calculateEarningSavings();
+    }
+
+    function toggleItemPayment(itemId, memberName) {
+      const item = items.find(i => i.id === itemId);
+      if (!item) return;
+
+      if (!item.paidBy) item.paidBy = [];
+
+      const index = item.paidBy.indexOf(memberName);
+      if (index > -1) {
+        item.paidBy.splice(index, 1);
+      } else {
+        item.paidBy.push(memberName);
+      }
+
+      saveItems();
+      renderList();
+    }
+
+    document.getElementById('calc-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const nameInput = document.getElementById('item-name');
+      const priceInput = document.getElementById('item-price');
+      const buyerInput = document.getElementById('item-buyer');
+      const peopleInput = document.getElementById('item-people');
+
+      const newItem = {
+        id: Date.now(),
+        name: nameInput.value.trim(),
+        price: parseFloat(priceInput.value),
+        buyer: buyerInput.value,
+        people: parseInt(peopleInput.value, 10),
+        paidBy: [buyerInput.value] // Der Käufer hat seinen eigenen Teil bereits automatisch bezahlt
+      };
+
+      items.push(newItem);
+      saveItems();
+      renderList();
+
+      nameInput.value = '';
+      priceInput.value = '';
+      peopleInput.value = '8';
+    });
+
+    function deleteItem(id) {
+      items = items.filter(item => item.id !== id);
+      saveItems();
+      renderList();
+    }
+
+    function updateHiddenInput() {
+      const hiddenInput = document.getElementById('hidden-shopping-list');
+      if (items.length === 0) {
+        hiddenInput.value = 'Keine aktuellen Anschaffungs-Einträge.';
+        return;
+      }
+
+      const summary = items.map(i => {
+        const perPerson = (i.price / i.people).toFixed(2);
+        const paidStr = (i.paidBy || []).join(', ');
+        return `${i.name} (Gekauft von ${i.buyer}): ${i.price.toFixed(2)}€ (${perPerson}€/Pers. - Bezahlt von: [${paidStr}])`;
+      }).join(' | ');
+
+      hiddenInput.value = summary;
+    }
+
+    // --- PINNWAND (PERMANENT) ---
+    let feedbacks = JSON.parse(localStorage.getItem('garage_feedbacks')) || [
+      { id: 1, name: 'Jonas', message: 'Kühlschrank steht in der Garage! Wer bringt Getränke mit?', date: '30.08.2026' },
+      { id: 2, name: 'Noah', message: 'Lasst uns als Nächstes das Werkzeug-Set bestellen.', date: '31.08.2026' }
+    ];
+
+    function saveFeedbacks() {
+      localStorage.setItem('garage_feedbacks', JSON.stringify(feedbacks));
+    }
+
+    function renderFeedbacks() {
+      const board = document.getElementById('feedback-board');
+      board.innerHTML = '';
+
+      if (feedbacks.length === 0) {
+        board.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Noch keine Nachrichten auf der Pinnwand.</p>';
+        return;
+      }
+
+      feedbacks.forEach(fb => {
+        const card = document.createElement('div');
+        card.className = 'feedback-card';
+        card.innerHTML = `
+          <div class="feedback-details" style="width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <h4 style="color: var(--accent-color); display: flex; align-items: center; gap: 0.4rem;">
+                <i class="fa-solid fa-user-circle"></i> ${escapeHtml(fb.name)}
+              </h4>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 0.75rem; color: var(--text-muted);">${fb.date}</span>
+                <button class="delete-btn" onclick="deleteFeedback(${fb.id})" title="Löschen">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+            <p style="color: var(--text-main); font-size: 0.9rem; line-height: 1.4;">${escapeHtml(fb.message)}</p>
+          </div>
+        `;
+        board.appendChild(card);
+      });
+    }
+
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      const nameSelect = document.getElementById('member-name');
+      const messageInput = document.getElementById('message');
+
+      const newFeedback = {
+        id: Date.now(),
+        name: nameSelect.value,
+        message: messageInput.value.trim(),
+        date: new Date().toLocaleDateString('de-DE')
+      };
+
+      feedbacks.unshift(newFeedback);
+      saveFeedbacks();
+      renderFeedbacks();
+    });
+
+    function deleteFeedback(id) {
+      feedbacks = feedbacks.filter(fb => fb.id !== id);
+      saveFeedbacks();
+      renderFeedbacks();
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
+    // Initiales Laden
+    renderRentBoard();
+    renderList();
+    renderFeedbacks();
+  </script>
+</body>
+</html>
